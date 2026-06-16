@@ -808,10 +808,18 @@ img {
 .phone-screen {
   width: 392px;
   height: 852px;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   background: #ffffff;
   border-radius: 22px;
   font-family: var(--font-amz);
+}
+
+.phone-screen::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 .phone-status {
