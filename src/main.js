@@ -165,6 +165,13 @@ const App = {
       await this.applyCompetitorFiles(Array.from(event.target.files || []));
       event.target.value = '';
     },
+    openCompetitorFilePicker(event) {
+      if (event?.target?.closest?.('button,input')) return;
+      this.$refs.competitorFileInput?.click();
+    },
+    openCompetitorFolderPicker() {
+      this.$refs.competitorFolderInput?.click();
+    },
     async handleCompetitorDrop(event) {
       this.competitorDragActive = false;
       const files = await this.collectDroppedImageFiles(event.dataTransfer);
@@ -586,6 +593,12 @@ body {
           <div
             class="upload-card competitor-drop"
             :class="{ dragging: competitorDragActive }"
+            role="button"
+            tabindex="0"
+            aria-label="上传竞品图片"
+            @click="openCompetitorFilePicker"
+            @keydown.enter.prevent="openCompetitorFilePicker"
+            @keydown.space.prevent="openCompetitorFilePicker"
             @dragenter.prevent="competitorDragActive = true"
             @dragover.prevent="competitorDragActive = true"
             @dragleave.prevent="handleCompetitorDragLeave"
@@ -600,8 +613,8 @@ body {
               <span>{{ competitorCountText }}</span>
             </span>
             <div class="upload-actions">
-              <button class="mini-btn" type="button" @click="$refs.competitorFileInput.click()">选图片</button>
-              <button class="mini-btn" type="button" @click="$refs.competitorFolderInput.click()">选文件夹</button>
+              <button class="mini-btn" type="button" @click.stop="$refs.competitorFileInput.click()">选图片</button>
+              <button class="mini-btn" type="button" @click.stop="openCompetitorFolderPicker">选文件夹</button>
             </div>
           </div>
           <button class="btn secondary full" type="button" @click="resetCompetitors">恢复默认竞品图</button>

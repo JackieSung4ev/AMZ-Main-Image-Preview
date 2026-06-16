@@ -140,7 +140,13 @@ img {
 }
 
 .upload-card.competitor-drop {
-  cursor: default;
+  cursor: pointer;
+  transition: border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
+}
+
+.upload-card.competitor-drop:hover {
+  background: #101923;
+  border-color: #5b6f86;
 }
 
 .upload-card.competitor-drop.dragging {
