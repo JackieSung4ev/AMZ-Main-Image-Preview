@@ -63,6 +63,8 @@ npm run preview
 ├── .github/workflows/deploy.yml
 ├── assets/
 ├── public/
+│   ├── CNAME
+│   └── assets/
 ├── src/
 │   ├── main.js
 │   └── styles.css
@@ -103,49 +105,29 @@ The workflow in `.github/workflows/deploy.yml` will run `npm ci`, `npm run build
 
 ## Custom Domain
 
-Recommended setup: use a subdomain, for example:
+This project is configured for:
 
 ```text
-preview.your-domain.com
+preview-amz.sudob.com
 ```
 
 Steps:
 
 1. In GitHub, go to `Settings` -> `Pages`.
-2. In `Custom domain`, enter your domain, for example `preview.your-domain.com`.
+2. In `Custom domain`, enter `preview-amz.sudob.com`.
 3. Click `Save`.
 4. In your DNS provider, add a CNAME record:
 
 ```text
 Type:  CNAME
-Name:  preview
+Name:  preview-amz
 Value: YOUR_USER.github.io
 ```
 
 5. Wait for DNS to take effect. This can take minutes, and sometimes up to 24 hours.
 6. Back in GitHub Pages settings, enable `Enforce HTTPS` after GitHub finishes checking the domain.
 
-For a root domain such as `your-domain.com`, add these A records at your DNS provider:
-
-```text
-Type: A
-Name: @
-Value: 185.199.108.153
-
-Type: A
-Name: @
-Value: 185.199.109.153
-
-Type: A
-Name: @
-Value: 185.199.110.153
-
-Type: A
-Name: @
-Value: 185.199.111.153
-```
-
-You can also add a `www` CNAME pointing to `YOUR_USER.github.io`, then choose whether GitHub redirects `www.your-domain.com` to `your-domain.com` or the other way around.
+The `public/CNAME` file is included so Vite copies the custom domain into the `dist` folder during deployment.
 
 ## Notes
 
