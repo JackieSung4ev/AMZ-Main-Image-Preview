@@ -68,7 +68,7 @@ const App = {
       defaultCompetitors: FALLBACK_COMPETITOR_IMAGES.slice(),
       view: 'pc',
       zoom: 100,
-      count: 12,
+      count: 36,
       myIndex: 0,
       shuffleOffset: 0,
       markMine: false,
@@ -636,10 +636,11 @@ body {
             <label class="field">
               <span>商品数量</span>
               <select v-model.number="count">
-                <option :value="8">8 个</option>
                 <option :value="12">12 个</option>
-                <option :value="16">16 个</option>
                 <option :value="24">24 个</option>
+                <option :value="30">30 个</option>
+                <option :value="36">36 个</option>
+                <option :value="40">40 个</option>
               </select>
             </label>
           </div>
