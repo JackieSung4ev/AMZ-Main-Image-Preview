@@ -390,8 +390,8 @@ body {
   background: #ffffff;
 }
 .export-pc-panel .pc-page {
-  width: max(100%, 1651px);
-  min-width: 1651px;
+  width: max(100%, 1780px);
+  min-width: 1780px;
   margin: 0 auto;
   border-radius: 0 !important;
   box-shadow: none !important;
@@ -682,12 +682,18 @@ body {
             <nav class="pc-subnav">
               <span>☰ All</span>
               <span>Early Prime Day</span>
+              <span>Health AI</span>
+              <span>Amazon Haul</span>
               <span>Amazon Basics</span>
               <span>Best Sellers</span>
               <span>Prime</span>
+              <span>Books</span>
               <span>New Releases</span>
               <span>Groceries</span>
               <span>Gift Cards</span>
+              <span>Sell</span>
+              <span>Fashion</span>
+              <span>Amazon Home</span>
               <span>Sports & Outdoors</span>
               <span>Home Improvement</span>
             </nav>
@@ -701,26 +707,57 @@ body {
                   <div class="filter-title">Eligible for Free Shipping</div>
                   <div class="filter-line">□ Free Shipping by Amazon</div>
                   <div class="filter-line">Get FREE Shipping on eligible orders</div>
+                  <div class="filter-line">shipped by Amazon</div>
                 </div>
                 <div class="filter-group">
                   <div class="filter-title">Delivery Day</div>
                   <div class="filter-line">□ Get It by Tomorrow</div>
                 </div>
                 <div class="filter-group">
+                  <div class="filter-title">Pick Up</div>
+                  <div class="filter-line">□ FREE Pickup</div>
+                </div>
+                <div class="filter-group">
                   <div class="filter-title">Customer Reviews</div>
                   <div class="filter-line stars">★★★★☆ & Up</div>
+                </div>
+                <div class="filter-group">
+                  <div class="filter-title">Size</div>
+                  <div class="filter-line">□ Large</div>
+                  <div class="filter-line">□ Medium</div>
+                  <div class="filter-line">□ One Size</div>
+                  <div class="filter-line">□ Small</div>
+                  <div class="filter-line">□ X-Large</div>
                 </div>
                 <div class="filter-group">
                   <div class="filter-title">Price</div>
                   <div class="filter-line">$1 - $20,200+</div>
                   <div class="price-track"><span></span><span></span></div>
+                  <div class="filter-line">Up to $25</div>
+                  <div class="filter-line">$25 to $45</div>
+                  <div class="filter-line">$45 to $60</div>
+                  <div class="filter-line">$60 & above</div>
+                </div>
+                <div class="filter-group">
+                  <div class="filter-title">Deals & Discounts</div>
+                  <div class="filter-line">All Discounts</div>
+                  <div class="filter-line">Buy More, Save More</div>
+                  <div class="filter-line">Coupons</div>
+                  <div class="filter-line">Today's Deals</div>
                 </div>
                 <div class="filter-group">
                   <div class="filter-title">Color</div>
                   <div class="color-row">
                     <span style="background:#8b5e34"></span><span style="background:#f8f8f8"></span><span style="background:#111111"></span>
-                    <span style="background:#356aa0"></span><span style="background:#76a15b"></span><span style="background:#f6ca45"></span><span style="background:#f49ba7"></span>
+                    <span style="background:#356aa0"></span><span style="background:#76a15b"></span><span style="background:#f6ca45"></span><span style="background:#f49ba7"></span><span style="background:#f6a04d"></span>
                   </div>
+                </div>
+                <div class="filter-group">
+                  <div class="filter-title">Closure</div>
+                  <div class="filter-line">□ Zipper</div>
+                  <div class="filter-line">□ Drawstring</div>
+                  <div class="filter-line">□ Fold Top</div>
+                  <div class="filter-line">□ Self Seal</div>
                 </div>
               </aside>
 
@@ -745,7 +782,7 @@ body {
                   </div>
                 </section>
                 <h2 class="results-heading">Results</h2>
-                <p class="results-note">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                <p class="results-note">Check each product page for other buying options. Price and other details may vary based on product size and color.</p>
                 <div class="pc-grid">
                   <article v-for="product in cards" :key="product.id" class="pc-card" :class="{ 'is-mine': product.isMine, marked: product.isMine && markMine }">
                     <span class="mine-tag">MY MAIN IMAGE</span>
