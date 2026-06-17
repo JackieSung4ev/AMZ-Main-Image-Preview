@@ -65,10 +65,12 @@ const App = {
     return {
       mainImage: 'assets/pouch_main.jpg',
       competitors: FALLBACK_COMPETITOR_IMAGES.slice(),
+      competitorDetails: [],
       baseCompetitors: FALLBACK_COMPETITOR_IMAGES.slice(),
       defaultCompetitors: FALLBACK_COMPETITOR_IMAGES.slice(),
       competitorCategories: [],
       selectedCategoryId: '',
+      captureMeta: null,
       view: 'pc',
       zoom: 100,
       count: 36,
@@ -94,8 +96,10 @@ const App = {
         if (index === this.myIndex) {
           cards.push(this.makeProduct(index, this.mainImage, true));
         } else {
-          const image = competitors[competitorCursor % competitors.length];
-          cards.push(this.makeProduct(index, image, false));
+          const competitorIndex = competitorCursor % competitors.length;
+          const detail = this.competitorDetails[competitorIndex] || {};
+          const image = detail.image || competitors[competitorIndex];
+          cards.push(this.makeProduct(index, image, false, detail));
           competitorCursor += 1;
         }
       }
@@ -114,10 +118,16 @@ const App = {
     },
     competitorCountText() {
       return `当前 ${this.competitors.length} 张竞品图`;
+    },
+    captureSummary() {
+      if (!this.captureMeta) return '';
+      const keyword = this.captureMeta.keyword ? ` · ${this.captureMeta.keyword}` : '';
+      return `实时采集${keyword} · ${this.competitors.length} 张`;
     }
   },
   mounted() {
     this.initializeCompetitors();
+    window.addEventListener('message', this.handleExtensionImport);
     this.updatePhoneClock();
     setInterval(this.updatePhoneClock, 60000);
   },
@@ -189,6 +199,8 @@ const App = {
       if (!this.selectedCategoryId) {
         this.defaultCompetitors = this.baseCompetitors.slice();
         this.competitors = this.defaultCompetitors.slice();
+        this.competitorDetails = [];
+        this.captureMeta = null;
         this.customCompetitors = false;
         this.shuffleOffset = 0;
         return;
@@ -199,11 +211,69 @@ const App = {
 
       this.defaultCompetitors = category.images.slice();
       this.competitors = category.images.slice();
+      this.competitorDetails = [];
+      this.captureMeta = null;
       this.customCompetitors = false;
       this.shuffleOffset = 0;
       if (category.keyword) this.query = category.keyword;
     },
-    makeProduct(index, image, isMine) {
+    handleExtensionImport(event) {
+      const message = event?.data || {};
+      if (message.source !== 'gzteam-amz-extension' || message.type !== 'GZTEAM_IMPORT_PRODUCTS') return;
+      this.applyImportedCompetitors(message.payload);
+    },
+    applyImportedCompetitors(payload) {
+      const products = Array.isArray(payload?.products) ? payload.products : [];
+      const importedProducts = products
+        .map((product, index) => this.normalizeImportedProduct(product, index))
+        .filter((product) => product.image);
+
+      if (!importedProducts.length) return;
+
+      this.competitorDetails = importedProducts;
+      this.competitors = importedProducts.map((product) => product.image);
+      this.customCompetitors = true;
+      this.selectedCategoryId = 'custom';
+      this.captureMeta = {
+        keyword: String(payload.keyword || '').trim(),
+        sourceUrl: String(payload.sourceUrl || '').trim(),
+        capturedAt: payload.capturedAt || ''
+      };
+      this.shuffleOffset = 0;
+      if (this.captureMeta.keyword) this.query = this.captureMeta.keyword;
+      if (this.competitors.length > this.count) this.count = Math.min(40, this.competitors.length);
+    },
+    normalizeImportedProduct(product, index) {
+      const priceParts = this.parsePriceParts(product.price || '');
+      return {
+        image: product.imageDataUrl || product.image || product.imageUrl || '',
+        title: String(product.title || '').trim(),
+        rating: this.cleanRating(product.rating),
+        reviews: this.cleanReviewCount(product.reviews || product.reviewCount),
+        priceWhole: priceParts.whole,
+        priceFraction: priceParts.fraction,
+        bought: String(product.bought || product.sales || '').trim(),
+        sponsored: Boolean(product.sponsored),
+        rank: product.rank || index + 1,
+        signals: Array.isArray(product.signals) ? product.signals.slice(0, 4) : []
+      };
+    },
+    parsePriceParts(price) {
+      const match = String(price || '').match(/(\d+)(?:[.,](\d{2}))?/);
+      return {
+        whole: match ? match[1] : '',
+        fraction: match && match[2] ? match[2] : ''
+      };
+    },
+    cleanRating(rating) {
+      const match = String(rating || '').match(/(\d+(?:\.\d+)?)/);
+      return match ? match[1] : '';
+    },
+    cleanReviewCount(value) {
+      const match = String(value || '').match(/[\d,]+/);
+      return match ? match[0] : '';
+    },
+    makeProduct(index, image, isMine, source = {}) {
       const titleIndex = index % PLACEHOLDER_TITLES.length;
       const priceWhole = ['6', '8', '9', '10', '12', '15', '19', '24'][index % 8];
       const priceFraction = ['99', '49', '95', '80'][index % 4];
@@ -212,13 +282,15 @@ const App = {
         id: `${isMine ? 'mine' : 'competitor'}-${index}`,
         isMine,
         image,
-        title: PLACEHOLDER_TITLES[isMine ? 0 : titleIndex],
-        rating: (4.3 + (index % 5) * 0.1).toFixed(1),
-        reviews: reviewCounts[index % reviewCounts.length],
-        priceWhole: isMine ? '19' : priceWhole,
-        priceFraction: isMine ? '99' : priceFraction,
-        bought: ['100+', '300+', '500+', '1K+', '2K+'][index % 5],
-        sponsored: index % 3 === 0
+        title: isMine ? PLACEHOLDER_TITLES[0] : (source.title || PLACEHOLDER_TITLES[titleIndex]),
+        rating: source.rating || (4.3 + (index % 5) * 0.1).toFixed(1),
+        reviews: source.reviews || reviewCounts[index % reviewCounts.length],
+        priceWhole: isMine ? '19' : (source.priceWhole || priceWhole),
+        priceFraction: isMine ? '99' : (source.priceFraction || priceFraction),
+        bought: source.bought || ['100+', '300+', '500+', '1K+', '2K+'][index % 5],
+        sponsored: Object.prototype.hasOwnProperty.call(source, 'sponsored') ? source.sponsored : index % 3 === 0,
+        rankLabel: source.rank ? `#${source.rank}` : '',
+        signalLine: Array.isArray(source.signals) && source.signals.length ? source.signals[0] : ''
       };
     },
     async handleMainFile(event) {
@@ -275,6 +347,8 @@ const App = {
       await this.waitForFrame();
       try {
         this.competitors = await Promise.all(imageFiles.map(this.readFileAsDataUrl));
+        this.competitorDetails = [];
+        this.captureMeta = null;
         this.customCompetitors = true;
         this.selectedCategoryId = 'custom';
         this.shuffleOffset = 0;
@@ -337,6 +411,8 @@ const App = {
       this.selectedCategoryId = '';
       this.defaultCompetitors = this.baseCompetitors.slice();
       this.competitors = this.defaultCompetitors.slice();
+      this.competitorDetails = [];
+      this.captureMeta = null;
       this.customCompetitors = false;
       this.shuffleOffset = 0;
     },
@@ -732,6 +808,7 @@ body {
               <strong>拖拽文件夹 / 批量上传</strong>
               <span>支持图片或整个文件夹</span>
               <span>{{ competitorCountText }}</span>
+              <span v-if="captureSummary" class="capture-summary">{{ captureSummary }}</span>
             </span>
             <div class="upload-actions">
               <button class="mini-btn" type="button" @click.stop="$refs.competitorFileInput.click()">选图片</button>
@@ -924,6 +1001,7 @@ body {
                     <div class="pc-card-body">
                       <div class="ad-label" v-html="product.sponsored ? 'Sponsored' : '&nbsp;'"></div>
                       <div class="product-title">{{ product.title }}</div>
+                      <div v-if="product.rankLabel || product.signalLine" class="capture-data"><span v-if="product.rankLabel">{{ product.rankLabel }}</span><span v-if="product.signalLine">{{ product.signalLine }}</span></div>
                       <div class="rating-row"><span class="stars">★★★★☆</span><span>{{ product.rating }}</span><span>{{ product.reviews }}</span></div>
                       <div class="sales-row">{{ product.bought }} bought in past month</div>
                       <div class="price"><sup>$</sup><strong>{{ product.priceWhole }}</strong><sup>{{ product.priceFraction }}</sup></div>
@@ -967,6 +1045,7 @@ body {
                   <div class="mobile-card-body">
                     <div class="ad-label" v-html="product.sponsored ? 'Sponsored' : '&nbsp;'"></div>
                     <div class="product-title">{{ product.title }}</div>
+                    <div v-if="product.rankLabel || product.signalLine" class="capture-data"><span v-if="product.rankLabel">{{ product.rankLabel }}</span><span v-if="product.signalLine">{{ product.signalLine }}</span></div>
                     <div class="rating-row"><span>{{ product.rating }}</span><span class="stars">★★★★☆</span><span>({{ product.reviews }})</span></div>
                     <div class="sales-row">{{ product.bought }} bought in past month</div>
                     <div class="price"><sup>$</sup><strong>{{ product.priceWhole }}</strong><sup>{{ product.priceFraction }}</sup></div>

@@ -193,6 +193,11 @@ img {
   font-size: 12px;
 }
 
+.upload-copy .capture-summary {
+  color: var(--amazon-yellow);
+  font-weight: 800;
+}
+
 .upload-actions {
   grid-column: 1 / -1;
   display: grid;
@@ -723,6 +728,20 @@ img {
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
+}
+
+.capture-data {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  min-height: 18px;
+  margin: -2px 0 5px;
+  overflow: hidden;
+  color: #1f6feb;
+  font-size: 11px;
+  line-height: 16px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .rating-row {

@@ -14,6 +14,7 @@ GZteam AMZ Main Image Preview is a Vue + Vite single-page tool for Amazon cross-
 - Adjust keyword, product count, and your product position.
 - Keep realistic desktop product image sizing for visual comparison.
 - Export desktop PNG, mobile PNG, current view PNG, or a standalone dual-device HTML file.
+- Use the optional Chrome extension to capture live Amazon search-result competitors.
 - Deploy as a static site with GitHub Pages.
 
 ## Tech Stack
@@ -112,6 +113,25 @@ Then add it to `categories.json`:
 ```
 
 Use 30-40 competitor main images per category when possible.
+
+## Live Amazon Capture Extension
+
+The optional unpacked Chrome extension lives in:
+
+```text
+extension/
+```
+
+Install it locally:
+
+1. Open `chrome://extensions/`.
+2. Turn on `Developer mode`.
+3. Click `Load unpacked`.
+4. Select the `extension` folder.
+
+Use it on an Amazon search-result page to capture competitor main images, ranking, ASIN, title, rating, review count, price, visible sales text, sponsored flags, and visible DOM text inserted by other browser plugins when that text is readable from the page DOM.
+
+The extension cannot read another plugin's private extension storage, background data, closed shadow DOM, or cross-origin iframe contents.
 
 ## Deploy To GitHub Pages
 

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>GZteam AMZ Capture</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main>
+    <h1>GZteam 竞品采集</h1>
+    <p>在 Amazon 搜索结果页点击采集，自动打开预览工具。</p>
+    <label>
+      采集数量
+      <select id="limit">
+        <option value="36">36 个</option>
+        <option value="48" selected>48 个</option>
+      </select>
+    </label>
+    <button id="capture" type="button">采集并打开预览</button>
+    <p id="status" role="status"></p>
+    <small>可读取页面 DOM 中可见的排名、评论、评分和其他插件插入的信息。</small>
+  </main>
+  <script src="popup.js"></script>
+</body>
+</html>

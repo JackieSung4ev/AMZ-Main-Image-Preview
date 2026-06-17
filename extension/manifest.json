@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "GZteam Amazon Live Capture",
+  "version": "0.1.0",
+  "description": "Capture Amazon search-result competitor images and visible page signals into GZteam AMZ Main Image Preview.",
+  "permissions": ["activeTab", "scripting", "storage", "tabs"],
+  "host_permissions": [
+    "https://www.amazon.com/*",
+    "https://smile.amazon.com/*",
+    "https://*.amazon.com/*",
+    "https://*.media-amazon.com/*",
+    "https://*.ssl-images-amazon.com/*",
+    "https://preview-amz.sudob.com/*",
+    "http://localhost/*",
+    "http://127.0.0.1/*"
+  ],
+  "action": {
+    "default_title": "GZteam AMZ Capture",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.amazon.com/*", "https://smile.amazon.com/*"],
+      "js": ["content-amazon.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://preview-amz.sudob.com/*", "http://localhost/*", "http://127.0.0.1/*"],
+      "js": ["content-preview.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

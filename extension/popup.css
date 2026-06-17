@@ -1,0 +1,66 @@
+body {
+  width: 290px;
+  margin: 0;
+  color: #f8fafc;
+  background: #101820;
+  font-family: Arial, "Microsoft YaHei", sans-serif;
+}
+
+main {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 18px;
+}
+
+p,
+small {
+  margin: 0;
+  color: #cbd5e1;
+  line-height: 1.45;
+}
+
+label {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+select,
+button {
+  min-height: 38px;
+  border-radius: 7px;
+  font: inherit;
+  font-weight: 800;
+}
+
+select {
+  color: #f8fafc;
+  background: #0c1218;
+  border: 1px solid #34465a;
+  padding: 0 10px;
+}
+
+button {
+  color: #101820;
+  background: #ffd814;
+  border: 2px solid #ff9900;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.65;
+  cursor: progress;
+}
+
+#status {
+  min-height: 18px;
+  color: #ffd814;
+  font-size: 12px;
+  font-weight: 800;
+}
