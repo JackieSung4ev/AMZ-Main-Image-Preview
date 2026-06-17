@@ -252,7 +252,7 @@ const App = {
         reviews: this.cleanReviewCount(product.reviews || product.reviewCount),
         priceWhole: priceParts.whole,
         priceFraction: priceParts.fraction,
-        bought: String(product.bought || product.sales || '').trim(),
+        bought: this.cleanBoughtCount(product.bought || product.sales),
         sponsored: Boolean(product.sponsored),
         rank: product.rank || index + 1,
         signals: Array.isArray(product.signals) ? product.signals.slice(0, 4) : []
@@ -272,6 +272,18 @@ const App = {
     cleanReviewCount(value) {
       const match = String(value || '').match(/[\d,]+/);
       return match ? match[0] : '';
+    },
+    cleanBoughtCount(value) {
+      const text = String(value || '');
+      const english = text.match(/(\d+(?:[,.]\d+)?\s*[Kk]?\+?)\s+(?:bought|sold|purchased)\s+in\s+past\s+month/i);
+      if (english) return english[1].replace(/\s+/g, '');
+
+      const chinese = text.match(/(?:\u8fd1\s*30\s*\u5929)?(?:\u9500\u91cf|\u6708\u9500)[^\d]*(\d+(?:[,.]\d+)?\s*[Kk]?\+?)/i)
+        || text.match(/(\d+(?:[,.]\d+)?\s*[Kk]?\+?)\s*(?:\u8fd1\s*30\s*\u5929)?(?:\u9500\u91cf|\u6708\u9500)/i);
+      if (chinese) return chinese[1].replace(/\s+/g, '');
+
+      const shortCount = text.trim().match(/^(\d+(?:[,.]\d+)?\s*[Kk]?\+?)$/);
+      return shortCount ? shortCount[1].replace(/\s+/g, '') : '';
     },
     makeProduct(index, image, isMine, source = {}) {
       const titleIndex = index % PLACEHOLDER_TITLES.length;

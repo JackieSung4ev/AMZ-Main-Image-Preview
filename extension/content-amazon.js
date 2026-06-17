@@ -39,7 +39,7 @@ function collectProduct(card, index, options) {
     '[aria-label*="ratings"]'
   ]);
   const price = pickText(card, ['.a-price .a-offscreen']);
-  const bought = pickMatchingText(card, /(bought|sold|purchased|月销|销量)/i);
+  const bought = pickBoughtText(card);
   const sponsored = /sponsored/i.test(card.innerText || '') || Boolean(card.querySelector('[aria-label="Sponsored"]'));
   const rank = Number(card.getAttribute('data-index')) || index + 1;
 
@@ -71,9 +71,17 @@ function pickText(root, selectors) {
   return '';
 }
 
-function pickMatchingText(root, pattern) {
-  const lines = visibleLines(root);
-  return lines.find((line) => pattern.test(line)) || '';
+function pickBoughtText(root) {
+  for (const line of visibleLines(root)) {
+    const text = cleanText(line);
+    const english = text.match(/(\d+(?:[,.]\d+)?\s*[Kk]?\+?)\s+(?:bought|sold|purchased)\s+in\s+past\s+month/i);
+    if (english) return compactCount(english[1]);
+
+    const chinese = text.match(/(?:\u8fd1\s*30\s*\u5929)?(?:\u9500\u91cf|\u6708\u9500)[^\d]*(\d+(?:[,.]\d+)?\s*[Kk]?\+?)/i)
+      || text.match(/(\d+(?:[,.]\d+)?\s*[Kk]?\+?)\s*(?:\u8fd1\s*30\s*\u5929)?(?:\u9500\u91cf|\u6708\u9500)/i);
+    if (chinese) return compactCount(chinese[1]);
+  }
+  return '';
 }
 
 function collectVisibleSignals(card, knownValues) {
@@ -103,4 +111,8 @@ function visibleLines(root) {
 
 function cleanText(text) {
   return String(text || '').replace(/\s+/g, ' ').trim();
+}
+
+function compactCount(value) {
+  return cleanText(value).replace(/\s+/g, '');
 }
