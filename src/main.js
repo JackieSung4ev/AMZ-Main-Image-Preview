@@ -65,7 +65,10 @@ const App = {
     return {
       mainImage: 'assets/pouch_main.jpg',
       competitors: FALLBACK_COMPETITOR_IMAGES.slice(),
+      baseCompetitors: FALLBACK_COMPETITOR_IMAGES.slice(),
       defaultCompetitors: FALLBACK_COMPETITOR_IMAGES.slice(),
+      competitorCategories: [],
+      selectedCategoryId: '',
       view: 'pc',
       zoom: 100,
       count: 36,
@@ -114,7 +117,7 @@ const App = {
     }
   },
   mounted() {
-    this.loadScrapedCompetitors();
+    this.initializeCompetitors();
     this.updatePhoneClock();
     setInterval(this.updatePhoneClock, 60000);
   },
@@ -124,6 +127,10 @@ const App = {
     }
   },
   methods: {
+    async initializeCompetitors() {
+      await this.loadScrapedCompetitors();
+      await this.loadCompetitorCategories();
+    },
     async loadScrapedCompetitors() {
       try {
         const response = await fetch('assets/scraped_products.json');
@@ -132,12 +139,69 @@ const App = {
         const images = products
           .filter((product) => product && product.image && !product.isMyProduct)
           .map((product) => product.image);
-        this.defaultCompetitors = this.uniqueImages(images.concat(FALLBACK_COMPETITOR_IMAGES));
+        this.baseCompetitors = this.uniqueImages(images.concat(FALLBACK_COMPETITOR_IMAGES));
+        this.defaultCompetitors = this.baseCompetitors.slice();
         if (!this.customCompetitors) this.competitors = this.defaultCompetitors.slice();
       } catch (error) {
-        this.defaultCompetitors = FALLBACK_COMPETITOR_IMAGES.slice();
+        this.baseCompetitors = FALLBACK_COMPETITOR_IMAGES.slice();
+        this.defaultCompetitors = this.baseCompetitors.slice();
         if (!this.customCompetitors) this.competitors = this.defaultCompetitors.slice();
       }
+    },
+    async loadCompetitorCategories() {
+      try {
+        const response = await fetch('competitors/categories.json');
+        if (!response.ok) return;
+        const data = await response.json();
+        const categories = Array.isArray(data.categories) ? data.categories : [];
+        this.competitorCategories = categories
+          .map((category) => this.normalizeCompetitorCategory(category))
+          .filter((category) => category.id && category.images.length);
+
+        if (!this.customCompetitors && this.competitorCategories.length) {
+          this.selectedCategoryId = this.competitorCategories[0].id;
+          this.applySelectedCategory();
+        }
+      } catch (error) {
+        this.competitorCategories = [];
+      }
+    },
+    normalizeCompetitorCategory(category) {
+      const basePath = (category.path || '').replace(/\\/g, '/').replace(/^\/+|\/+$/g, '');
+      const directImages = Array.isArray(category.images) ? category.images : [];
+      const fileImages = Array.isArray(category.files) && basePath
+        ? category.files.map((file) => `${basePath}/${file}`)
+        : [];
+
+      return {
+        id: String(category.id || '').trim(),
+        name: String(category.name || category.id || '').trim(),
+        keyword: String(category.keyword || '').trim(),
+        images: this.uniqueImages(directImages.concat(fileImages).map((path) => this.normalizeImagePath(path)).filter(Boolean))
+      };
+    },
+    normalizeImagePath(path) {
+      return String(path || '').replace(/\\/g, '/').replace(/^\.?\//, '');
+    },
+    applySelectedCategory() {
+      if (this.selectedCategoryId === 'custom') return;
+
+      if (!this.selectedCategoryId) {
+        this.defaultCompetitors = this.baseCompetitors.slice();
+        this.competitors = this.defaultCompetitors.slice();
+        this.customCompetitors = false;
+        this.shuffleOffset = 0;
+        return;
+      }
+
+      const category = this.competitorCategories.find((item) => item.id === this.selectedCategoryId);
+      if (!category || !category.images.length) return;
+
+      this.defaultCompetitors = category.images.slice();
+      this.competitors = category.images.slice();
+      this.customCompetitors = false;
+      this.shuffleOffset = 0;
+      if (category.keyword) this.query = category.keyword;
     },
     makeProduct(index, image, isMine) {
       const titleIndex = index % PLACEHOLDER_TITLES.length;
@@ -212,6 +276,7 @@ const App = {
       try {
         this.competitors = await Promise.all(imageFiles.map(this.readFileAsDataUrl));
         this.customCompetitors = true;
+        this.selectedCategoryId = 'custom';
         this.shuffleOffset = 0;
       } finally {
         this.exporting = '';
@@ -269,6 +334,8 @@ const App = {
       });
     },
     resetCompetitors() {
+      this.selectedCategoryId = '';
+      this.defaultCompetitors = this.baseCompetitors.slice();
       this.competitors = this.defaultCompetitors.slice();
       this.customCompetitors = false;
       this.shuffleOffset = 0;
@@ -636,6 +703,14 @@ body {
 
         <section class="control-block">
           <h2 class="control-title">竞品主图</h2>
+          <label class="field library-field">
+            <span>类目图库</span>
+            <select v-model="selectedCategoryId" @change="applySelectedCategory">
+              <option value="">默认图库</option>
+              <option v-for="category in competitorCategories" :key="category.id" :value="category.id">{{ category.name }} · {{ category.images.length }} 张</option>
+              <option v-if="customCompetitors" value="custom">临时上传 · {{ competitors.length }} 张</option>
+            </select>
+          </label>
           <div
             class="upload-card competitor-drop"
             :class="{ dragging: competitorDragActive }"
@@ -845,7 +920,6 @@ body {
                 <p class="results-note">Check each product page for other buying options. Price and other details may vary based on product size and color.</p>
                 <div class="pc-grid">
                   <article v-for="product in cards" :key="product.id" class="pc-card" :class="{ 'is-mine': product.isMine, marked: product.isMine && markMine }">
-                    <span class="mine-tag">MY MAIN IMAGE</span>
                     <div class="pc-card-image"><img :src="product.image" alt=""></div>
                     <div class="pc-card-body">
                       <div class="ad-label" v-html="product.sponsored ? 'Sponsored' : '&nbsp;'"></div>
@@ -889,7 +963,6 @@ body {
               <div class="mobile-resultbar">Results for <strong>"{{ query }}"</strong></div>
               <div class="mobile-list">
                 <article v-for="product in cards" :key="'mobile-' + product.id" class="mobile-card" :class="{ 'is-mine': product.isMine, marked: product.isMine && markMine }">
-                  <span class="mine-tag">MY</span>
                   <div class="mobile-card-image"><img :src="product.image" alt=""></div>
                   <div class="mobile-card-body">
                     <div class="ad-label" v-html="product.sponsored ? 'Sponsored' : '&nbsp;'"></div>

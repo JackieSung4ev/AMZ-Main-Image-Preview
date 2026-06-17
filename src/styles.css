@@ -656,24 +656,6 @@ img {
   outline-offset: -3px;
 }
 
-.mine-tag {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  z-index: 3;
-  display: none;
-  padding: 4px 7px;
-  color: #111111;
-  background: var(--amazon-yellow);
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 800;
-}
-
-.marked .mine-tag {
-  display: block;
-}
-
 .pc-card-image,
 .mobile-card-image {
   display: grid;
