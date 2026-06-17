@@ -74,6 +74,7 @@ const App = {
       markMine: false,
       query: 'food pouch bag',
       customCompetitors: false,
+      mainDragActive: false,
       competitorDragActive: false,
       exporting: '',
       phoneTime: '09:41',
@@ -159,6 +160,27 @@ const App = {
     async handleMainFile(event) {
       const file = event.target.files && event.target.files[0];
       if (!file) return;
+      await this.applyMainFile(file);
+      event.target.value = '';
+    },
+    openMainFilePicker(event) {
+      if (event?.target?.closest?.('button,input')) return;
+      this.$refs.mainFileInput?.click();
+    },
+    async handleMainDrop(event) {
+      this.mainDragActive = false;
+      const files = await this.collectDroppedImageFiles(event.dataTransfer);
+      const imageFile = this.sortImageFiles(files.filter(this.isImageFile))[0];
+      if (!imageFile) return;
+      await this.applyMainFile(imageFile);
+    },
+    handleMainDragLeave(event) {
+      if (!event.currentTarget.contains(event.relatedTarget)) {
+        this.mainDragActive = false;
+      }
+    },
+    async applyMainFile(file) {
+      if (!this.isImageFile(file)) return;
       this.mainImage = await this.readFileAsDataUrl(file);
     },
     async handleCompetitorFiles(event) {
@@ -578,14 +600,27 @@ body {
 
         <section class="control-block">
           <h2 class="control-title">我的主图</h2>
-          <label class="upload-card">
-            <input type="file" accept="image/*" @change="handleMainFile">
+          <div
+            class="upload-card main-drop"
+            :class="{ dragging: mainDragActive }"
+            role="button"
+            tabindex="0"
+            aria-label="上传主图"
+            @click="openMainFilePicker"
+            @keydown.enter.prevent="openMainFilePicker"
+            @keydown.space.prevent="openMainFilePicker"
+            @dragenter.prevent="mainDragActive = true"
+            @dragover.prevent="mainDragActive = true"
+            @dragleave.prevent="handleMainDragLeave"
+            @drop.prevent="handleMainDrop"
+          >
+            <input ref="mainFileInput" type="file" accept="image/*" @change="handleMainFile">
             <span class="upload-thumb"><img :src="mainImage" alt=""></span>
             <span class="upload-copy">
               <strong>上传主图</strong>
               <span>JPG / PNG / WebP</span>
             </span>
-          </label>
+          </div>
         </section>
 
         <section class="control-block">

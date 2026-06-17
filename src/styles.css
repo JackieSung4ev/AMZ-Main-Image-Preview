@@ -139,17 +139,20 @@ img {
   border-radius: 8px;
 }
 
-.upload-card.competitor-drop {
+.upload-card.competitor-drop,
+.upload-card.main-drop {
   cursor: pointer;
   transition: border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
 }
 
-.upload-card.competitor-drop:hover {
+.upload-card.competitor-drop:hover,
+.upload-card.main-drop:hover {
   background: #101923;
   border-color: #5b6f86;
 }
 
-.upload-card.competitor-drop.dragging {
+.upload-card.competitor-drop.dragging,
+.upload-card.main-drop.dragging {
   background: #111b26;
   border-color: var(--amazon-orange);
   box-shadow: 0 0 0 2px rgba(255, 153, 0, 0.22);
