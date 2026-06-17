@@ -62,7 +62,6 @@ npm run preview
 ```text
 .
 ├── .github/workflows/deploy.yml
-├── assets/
 ├── public/
 │   ├── CNAME
 │   └── assets/
@@ -171,4 +170,4 @@ The `public/CNAME` file is included so Vite copies the custom domain into the `d
 
 - GitHub Pages is public-facing, so do not upload private client assets if the repository or published site should not be public.
 - The current Vite config uses relative asset paths, which helps the app work both under a repository path and under a custom domain.
-- If you change the default assets in `assets`, also copy the updated files into `public/assets` before building.
+- Keep default app images in `public/assets` so Vite copies them into the production build.
