@@ -16,9 +16,13 @@
         <option value="48" selected>48 个</option>
       </select>
     </label>
+    <label class="check-row">
+      <input id="includeSignals" type="checkbox">
+      <span>同时采集页面插件/卖家工具信息</span>
+    </label>
     <button id="capture" type="button">采集并打开预览</button>
     <p id="status" role="status"></p>
-    <small>可读取页面 DOM 中可见的排名、评论、评分和其他插件插入的信息。</small>
+    <small>默认只采集买家可见信息。勾选后会额外读取 DOM 中可见的插件/卖家工具文本。</small>
   </main>
   <script src="popup.js"></script>
 </body>

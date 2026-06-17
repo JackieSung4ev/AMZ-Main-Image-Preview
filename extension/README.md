@@ -15,8 +15,9 @@ Chrome extension for sending the current Amazon search-result page into GZteam A
 1. Open an Amazon search-result page, for example `https://www.amazon.com/s?k=mylar+bag`.
 2. Click the GZteam extension icon.
 3. Choose 36 or 48 products.
-4. Click `采集并打开预览`.
-5. The preview site opens and replaces the competitor images with the captured products.
+4. Leave `同时采集页面插件/卖家工具信息` unchecked for a buyer-style preview, or check it when you want visible plugin/tool text.
+5. Click `采集并打开预览`.
+6. The preview site opens and replaces the competitor images with the captured products.
 
 ## What It Can Collect
 
@@ -29,7 +30,7 @@ Chrome extension for sending the current Amazon search-result page into GZteam A
 - Price
 - Bought/sales text when visible
 - Sponsored flag when visible
-- Extra visible DOM text that looks like ranking, keyword, sales, review, seller, ad, ACOS, CPC, CTR, or CVR data
+- Optional extra visible DOM text that looks like ranking, keyword, sales, review, seller, ad, ACOS, CPC, CTR, or CVR data
 
 Other browser-extension data can be collected only when that extension renders the text into the Amazon page DOM. This extension cannot read another extension's private storage, background requests, closed shadow DOM, or cross-origin iframe contents.
 

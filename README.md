@@ -129,7 +129,7 @@ Install it locally:
 3. Click `Load unpacked`.
 4. Select the `extension` folder.
 
-Use it on an Amazon search-result page to capture competitor main images, ranking, ASIN, title, rating, review count, price, visible sales text, sponsored flags, and visible DOM text inserted by other browser plugins when that text is readable from the page DOM.
+Use it on an Amazon search-result page to capture competitor main images, ranking, ASIN, title, rating, review count, price, visible sales text, and sponsored flags. Extra browser-plugin or seller-tool text is optional and is off by default.
 
 The extension cannot read another plugin's private extension storage, background data, closed shadow DOM, or cross-origin iframe contents.
 

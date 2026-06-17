@@ -1,24 +1,27 @@
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message?.type !== 'COLLECT_AMAZON_SEARCH') return false;
-  sendResponse(collectAmazonSearch(message.limit || 48));
+  sendResponse(collectAmazonSearch({
+    limit: message.limit || 48,
+    includeSignals: Boolean(message.includeSignals)
+  }));
   return false;
 });
 
-function collectAmazonSearch(limit) {
+function collectAmazonSearch(options) {
   const cards = Array.from(document.querySelectorAll('[data-component-type="s-search-result"]'))
     .filter((card) => card.querySelector('img.s-image'))
-    .slice(0, limit);
+    .slice(0, options.limit);
 
   return {
     ok: true,
     keyword: getKeyword(),
     sourceUrl: location.href,
     pageTitle: document.title,
-    products: cards.map((card, index) => collectProduct(card, index))
+    products: cards.map((card, index) => collectProduct(card, index, options))
   };
 }
 
-function collectProduct(card, index) {
+function collectProduct(card, index, options) {
   const image = card.querySelector('img.s-image');
   const title = pickText(card, [
     'h2 a span',
@@ -50,7 +53,7 @@ function collectProduct(card, index) {
     price,
     bought,
     sponsored,
-    signals: collectVisibleSignals(card, { title, rating, reviews, price, bought })
+    signals: options.includeSignals ? collectVisibleSignals(card, { title, rating, reviews, price, bought }) : []
   };
 }
 

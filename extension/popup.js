@@ -4,6 +4,7 @@ document.querySelector('#capture').addEventListener('click', async () => {
   const button = document.querySelector('#capture');
   const status = document.querySelector('#status');
   const limit = Number(document.querySelector('#limit').value) || 48;
+  const includeSignals = document.querySelector('#includeSignals').checked;
 
   button.disabled = true;
   status.textContent = '正在读取当前 Amazon 页面...';
@@ -14,7 +15,7 @@ document.querySelector('#capture').addEventListener('click', async () => {
       throw new Error('请先切到 Amazon 搜索结果页再采集。');
     }
 
-    const capture = await collectFromTab(tab.id, limit);
+    const capture = await collectFromTab(tab.id, { limit, includeSignals });
 
     if (!capture?.ok || !capture.products?.length) {
       throw new Error('没有在当前页找到搜索结果商品。');
@@ -37,11 +38,11 @@ document.querySelector('#capture').addEventListener('click', async () => {
   }
 });
 
-async function collectFromTab(tabId, limit) {
+async function collectFromTab(tabId, options) {
   try {
     return await chrome.tabs.sendMessage(tabId, {
       type: 'COLLECT_AMAZON_SEARCH',
-      limit
+      ...options
     });
   } catch (error) {
     await chrome.scripting.executeScript({
@@ -50,7 +51,7 @@ async function collectFromTab(tabId, limit) {
     });
     return await chrome.tabs.sendMessage(tabId, {
       type: 'COLLECT_AMAZON_SEARCH',
-      limit
+      ...options
     });
   }
 }
