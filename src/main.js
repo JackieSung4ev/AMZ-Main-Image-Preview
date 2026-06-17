@@ -418,10 +418,18 @@ body {
   overflow-x: auto;
   background: #ffffff;
 }
+.export-pc-frame {
+  display: grid;
+  justify-content: center;
+  align-items: start;
+  width: max-content;
+  min-width: 100%;
+  background: #ffffff;
+}
 .export-pc-panel .pc-page {
-  width: max(100%, 1780px);
+  width: 1780px;
   min-width: 1780px;
-  margin: 0 auto;
+  margin: 0;
   border-radius: 0 !important;
   box-shadow: none !important;
 }
@@ -453,7 +461,7 @@ body {
     </div>
   </nav>
   <main class="export-stage" data-active="pc">
-    <section class="export-pc-panel" data-panel="pc">${pcHtml}</section>
+    <section class="export-pc-panel" data-panel="pc"><div class="export-pc-frame">${pcHtml}</div></section>
     <section class="export-mobile-panel" data-panel="mobile">${mobileHtml}</section>
   </main>
   <script>
