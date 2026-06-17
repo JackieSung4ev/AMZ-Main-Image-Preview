@@ -419,19 +419,22 @@ body {
   background: #ffffff;
 }
 .export-pc-frame {
-  display: grid;
-  justify-content: center;
-  align-items: start;
-  width: max-content;
-  min-width: 100%;
+  width: 100%;
+  min-width: 1780px;
   background: #ffffff;
 }
 .export-pc-panel .pc-page {
-  width: 1780px;
+  width: 100%;
   min-width: 1780px;
   margin: 0;
   border-radius: 0 !important;
   box-shadow: none !important;
+}
+.export-pc-panel .pc-resultbar,
+.export-pc-panel .pc-layout {
+  width: 1780px;
+  margin-right: auto;
+  margin-left: auto;
 }
 .export-mobile-panel {
   min-height: calc(100vh - 62px);
