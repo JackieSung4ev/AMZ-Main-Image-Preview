@@ -300,11 +300,12 @@ img {
 }
 
 .btn.export-main {
-  min-height: 52px;
+  min-height: 58px;
+  color: #101820;
   background: var(--amazon-yellow);
   border: 2px solid var(--amazon-orange);
   box-shadow: 0 0 0 3px rgba(255, 153, 0, 0.18);
-  font-size: 15px;
+  font-size: 16px;
 }
 
 .btn.secondary {
@@ -698,11 +699,12 @@ img {
 }
 
 .mobile-card-image img {
-  width: auto;
-  height: auto;
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  aspect-ratio: auto !important;
+  object-fit: contain !important;
 }
 
 .ad-label {
@@ -984,6 +986,7 @@ img {
 
 .mobile-card-image {
   height: 206px;
+  overflow: hidden;
   padding: 12px 9px;
 }
 
