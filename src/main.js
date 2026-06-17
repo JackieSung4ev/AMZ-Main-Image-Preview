@@ -789,10 +789,10 @@ body {
         <section class="control-block">
           <h2 class="control-title">导出</h2>
           <div class="button-stack">
-            <button class="btn primary" type="button" @click="exportPng('pc')">导出 PC PNG</button>
-            <button class="btn primary" type="button" @click="exportPng('mobile')">导出手机 PNG</button>
+            <button class="btn export-main" type="button" @click="exportHtml">导出双端 HTML 单页</button>
+            <button class="btn secondary" type="button" @click="exportPng('pc')">导出 PC PNG</button>
+            <button class="btn secondary" type="button" @click="exportPng('mobile')">导出手机 PNG</button>
             <button class="btn secondary" type="button" @click="exportPng(view)">导出当前视图</button>
-            <button class="btn secondary" type="button" @click="exportHtml">导出 HTML 单页（双端）</button>
           </div>
         </section>
       </aside>
