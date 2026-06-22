@@ -119,6 +119,11 @@ img {
   outline: none;
 }
 
+.field input[readonly] {
+  color: #d7dee7;
+  background: #111b26;
+}
+
 .two-col {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -217,6 +222,59 @@ img {
 
 .mini-btn:hover {
   background: #304154;
+}
+
+.mini-btn:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+}
+
+.main-variant-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.main-variant {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 52px;
+  gap: 8px;
+  align-items: end;
+  padding: 8px;
+  background: #0c1218;
+  border: 1px solid #2c3947;
+  border-radius: 8px;
+}
+
+.main-variant-thumb {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  overflow: hidden;
+  background: #ffffff;
+  border-radius: 5px;
+}
+
+.main-variant-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.main-variant-field {
+  min-width: 0;
+  margin-bottom: 0;
+}
+
+.main-variant-field span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.remove-main {
+  min-height: 36px;
 }
 
 .check-row {

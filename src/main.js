@@ -63,7 +63,15 @@ const PLACEHOLDER_TITLES = [
 const App = {
   data() {
     return {
-      mainImage: 'assets/pouch_main.jpg',
+      mainProducts: [
+        {
+          id: 'main-1',
+          image: 'assets/pouch_main.jpg',
+          position: 0,
+          name: '主图 1'
+        }
+      ],
+      nextMainId: 2,
       competitors: FALLBACK_COMPETITOR_IMAGES.slice(),
       competitorDetails: [],
       baseCompetitors: FALLBACK_COMPETITOR_IMAGES.slice(),
@@ -74,7 +82,6 @@ const App = {
       view: 'pc',
       zoom: 100,
       count: 36,
-      myIndex: 0,
       shuffleOffset: 0,
       markMine: false,
       query: 'food pouch bag',
@@ -90,11 +97,13 @@ const App = {
     cards() {
       const cards = [];
       const competitors = this.competitors.length ? this.competitors : FALLBACK_COMPETITOR_IMAGES;
+      const mainProducts = this.mainProductsByPosition;
       let competitorCursor = this.shuffleOffset;
 
       for (let index = 0; index < this.count; index += 1) {
-        if (index === this.myIndex) {
-          cards.push(this.makeProduct(index, this.mainImage, true));
+        const mainProduct = mainProducts.get(index);
+        if (mainProduct) {
+          cards.push(this.makeProduct(index, mainProduct.image, true, mainProduct));
         } else {
           const competitorIndex = competitorCursor % competitors.length;
           const detail = this.competitorDetails[competitorIndex] || {};
@@ -106,6 +115,21 @@ const App = {
 
       return cards;
     },
+    mainProductsByPosition() {
+      const map = new Map();
+      this.mainProducts.forEach((product, order) => {
+        let position = this.clampPosition(product.position, order);
+        let attempts = 0;
+        while (map.has(position) && attempts < this.count) {
+          position = (position + 1) % this.count;
+          attempts += 1;
+        }
+        if (!map.has(position)) {
+          map.set(position, { ...product, order, position });
+        }
+      });
+      return map;
+    },
     brandImages() {
       const competitors = this.competitors.length ? this.competitors : FALLBACK_COMPETITOR_IMAGES;
       return [0, 1, 2].map((index) => competitors[(this.shuffleOffset + index) % competitors.length]);
@@ -114,7 +138,18 @@ const App = {
       return { transform: `scale(${this.zoom / 100})` };
     },
     metaText() {
-      return `${this.count} 个商品 · 第 ${this.myIndex + 1} 位`;
+      return `${this.count} 个商品 · ${this.mainPositionsText}`;
+    },
+    mainUploadThumb() {
+      return this.mainProducts[0]?.image || 'assets/pouch_main.jpg';
+    },
+    mainCountText() {
+      return `当前 ${this.mainProducts.length} 张主图`;
+    },
+    mainPositionsText() {
+      return this.mainProducts
+        .map((product) => `第 ${this.clampPosition(product.position) + 1} 位`)
+        .join('、');
     },
     competitorCountText() {
       return `当前 ${this.competitors.length} 张竞品图`;
@@ -133,7 +168,10 @@ const App = {
   },
   watch: {
     count(value) {
-      if (this.myIndex >= value) this.myIndex = value - 1;
+      this.mainProducts.forEach((product, index) => {
+        product.position = this.clampPosition(product.position, index, value);
+      });
+      this.normalizeMainPositions();
     }
   },
   methods: {
@@ -285,13 +323,37 @@ const App = {
       const shortCount = text.trim().match(/^(\d+(?:[,.]\d+)?\s*[Kk]?\+?)$/);
       return shortCount ? shortCount[1].replace(/\s+/g, '') : '';
     },
+    clampPosition(position, fallback = 0, count = this.count) {
+      const max = Math.max(0, count - 1);
+      const numeric = Number(position);
+      if (!Number.isFinite(numeric)) return Math.min(fallback, max);
+      return Math.min(Math.max(Math.trunc(numeric), 0), max);
+    },
+    normalizeMainPositions() {
+      const used = new Set();
+      this.mainProducts.forEach((product, index) => {
+        let position = this.clampPosition(product.position, index);
+        let attempts = 0;
+        while (used.has(position) && attempts < this.count) {
+          position = (position + 1) % this.count;
+          attempts += 1;
+        }
+        product.position = position;
+        used.add(position);
+      });
+    },
+    createMainId() {
+      const id = this.nextMainId;
+      this.nextMainId += 1;
+      return `main-${id}`;
+    },
     makeProduct(index, image, isMine, source = {}) {
       const titleIndex = index % PLACEHOLDER_TITLES.length;
       const priceWhole = ['6', '8', '9', '10', '12', '15', '19', '24'][index % 8];
       const priceFraction = ['99', '49', '95', '80'][index % 4];
       const reviewCounts = ['128', '463', '1,042', '2,318', '4,906', '8,112'];
       return {
-        id: `${isMine ? 'mine' : 'competitor'}-${index}`,
+        id: `${isMine ? source.id || 'mine' : 'competitor'}-${index}`,
         isMine,
         image,
         title: isMine ? PLACEHOLDER_TITLES[0] : (source.title || PLACEHOLDER_TITLES[titleIndex]),
@@ -301,14 +363,12 @@ const App = {
         priceFraction: isMine ? '99' : (source.priceFraction || priceFraction),
         bought: source.bought || ['100+', '300+', '500+', '1K+', '2K+'][index % 5],
         sponsored: Object.prototype.hasOwnProperty.call(source, 'sponsored') ? source.sponsored : index % 3 === 0,
-        rankLabel: source.rank ? `#${source.rank}` : '',
+        rankLabel: !isMine && source.rank ? `#${source.rank}` : '',
         signalLine: Array.isArray(source.signals) && source.signals.length ? source.signals[0] : ''
       };
     },
     async handleMainFile(event) {
-      const file = event.target.files && event.target.files[0];
-      if (!file) return;
-      await this.applyMainFile(file);
+      await this.applyMainFiles(Array.from(event.target.files || []));
       event.target.value = '';
     },
     openMainFilePicker(event) {
@@ -318,18 +378,47 @@ const App = {
     async handleMainDrop(event) {
       this.mainDragActive = false;
       const files = await this.collectDroppedImageFiles(event.dataTransfer);
-      const imageFile = this.sortImageFiles(files.filter(this.isImageFile))[0];
-      if (!imageFile) return;
-      await this.applyMainFile(imageFile);
+      await this.applyMainFiles(files);
     },
     handleMainDragLeave(event) {
       if (!event.currentTarget.contains(event.relatedTarget)) {
         this.mainDragActive = false;
       }
     },
-    async applyMainFile(file) {
-      if (!this.isImageFile(file)) return;
-      this.mainImage = await this.readFileAsDataUrl(file);
+    async applyMainFiles(files) {
+      const imageFiles = this.sortImageFiles(files.filter(this.isImageFile));
+      if (!imageFiles.length) return;
+      this.exporting = '正在读取主图...';
+      await this.waitForFrame();
+      try {
+        const images = await Promise.all(imageFiles.map(this.readFileAsDataUrl));
+        this.mainProducts = images.map((image, index) => ({
+          id: this.createMainId(),
+          image,
+          position: index % this.count,
+          name: imageFiles[index].name || `主图 ${index + 1}`
+        }));
+        this.normalizeMainPositions();
+      } finally {
+        this.exporting = '';
+      }
+    },
+    removeMainProduct(id) {
+      const nextProducts = this.mainProducts.filter((product) => product.id !== id);
+      if (!nextProducts.length) {
+        this.resetMainProducts();
+        return;
+      }
+      this.mainProducts = nextProducts;
+      this.normalizeMainPositions();
+    },
+    resetMainProducts() {
+      this.mainProducts = [{
+        id: this.createMainId(),
+        image: 'assets/pouch_main.jpg',
+        position: 0,
+        name: '主图 1'
+      }];
     },
     async handleCompetitorFiles(event) {
       await this.applyCompetitorFiles(Array.from(event.target.files || []));
@@ -780,12 +869,29 @@ body {
             @dragleave.prevent="handleMainDragLeave"
             @drop.prevent="handleMainDrop"
           >
-            <input ref="mainFileInput" type="file" accept="image/*" @change="handleMainFile">
-            <span class="upload-thumb"><img :src="mainImage" alt=""></span>
+            <input ref="mainFileInput" type="file" accept="image/*" multiple @change="handleMainFile">
+            <span class="upload-thumb"><img :src="mainUploadThumb" alt=""></span>
             <span class="upload-copy">
-              <strong>上传主图</strong>
-              <span>JPG / PNG / WebP</span>
+              <strong>上传/拖拽多张主图</strong>
+              <span>支持 JPG / PNG / WebP</span>
+              <span>{{ mainCountText }}</span>
             </span>
+            <div class="upload-actions">
+              <button class="mini-btn" type="button" @click.stop="$refs.mainFileInput.click()">选主图</button>
+              <button class="mini-btn" type="button" @click.stop="resetMainProducts">恢复默认</button>
+            </div>
+          </div>
+          <div class="main-variant-list">
+            <article v-for="(product, index) in mainProducts" :key="product.id" class="main-variant">
+              <span class="main-variant-thumb"><img :src="product.image" alt=""></span>
+              <label class="field main-variant-field">
+                <span>{{ product.name || ('主图 ' + (index + 1)) }}</span>
+                <select v-model.number="product.position" @change="normalizeMainPositions">
+                  <option v-for="position in count" :key="product.id + '-' + position" :value="position - 1">第 {{ position }} 位</option>
+                </select>
+              </label>
+              <button class="mini-btn remove-main" type="button" :disabled="mainProducts.length === 1" @click="removeMainProduct(product.id)">删除</button>
+            </article>
           </div>
         </section>
 
@@ -838,10 +944,8 @@ body {
           </label>
           <div class="two-col">
             <label class="field">
-              <span>我的位置</span>
-              <select v-model.number="myIndex">
-                <option v-for="index in count" :key="index" :value="index - 1">第 {{ index }} 位</option>
-              </select>
+              <span>主图数量</span>
+              <input :value="mainProducts.length + ' 张'" type="text" readonly>
             </label>
             <label class="field">
               <span>商品数量</span>
